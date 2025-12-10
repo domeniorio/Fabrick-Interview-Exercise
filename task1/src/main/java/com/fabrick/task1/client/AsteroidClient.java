@@ -1,11 +1,13 @@
 package com.fabrick.task1.client;
 
 import com.fabrick.task1.dto.NasaNeoLookupResponse;
+import com.fabrick.task1.exception.AsteroidNotFoundException;
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -43,6 +45,9 @@ public class AsteroidClient {
                         .build(asteroidId))
                 .retrieve()
                 .bodyToMono(NasaNeoLookupResponse.class)
+                .onErrorResume(WebClientResponseException.NotFound.class, ex -> {
+                    return Mono.error(new AsteroidNotFoundException(asteroidId));
+                })
                 .doOnNext(response -> cache.put(asteroidId, response));
     }
 }

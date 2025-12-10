@@ -2,6 +2,8 @@ package com.fabrick.task2.client;
 
 import com.fabrick.task2.dto.AirportDTO;
 import com.fabrick.task2.dto.StationDTO;
+import com.fabrick.task2.exception.AirportNotFoundException;
+import com.fabrick.task2.exception.StationNotFoundException;
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +49,7 @@ public class AviationClient {
                 .retrieve()
                 .bodyToFlux(AirportDTO.class)
                 .next()
-                .switchIfEmpty(Mono.error(new RuntimeException("Airport not found: " + airportId)))
+                .switchIfEmpty(Mono.error(new AirportNotFoundException(airportId)))
                 .doOnNext(dto -> airportCache.put(airportId, dto));
     }
 
@@ -68,7 +70,7 @@ public class AviationClient {
                 .retrieve()
                 .bodyToFlux(StationDTO.class)
                 .next()
-                .switchIfEmpty(Mono.error(new RuntimeException("Station not found: " + stationId)))
+                .switchIfEmpty(Mono.error(new StationNotFoundException(stationId)))
                 .doOnNext(dto -> stationCache.put(stationId, dto));
     }
 
